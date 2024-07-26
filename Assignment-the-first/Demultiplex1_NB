@@ -1,0 +1,45 @@
+Kenny's Notebook for Dumultiplex 1 Assignment 
+[on talapas...]
+Data Location: /projects/bgmp/shared/2017_sequencing
+Notebook/WD Location: /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-first
+____________________________________
+07/25/24
+____________________________________
+#PART 1 - Quality Score Distribution per-nudelotide 
+## 1. Perform some initial data exploration. 
+* How big is each file? 
+```
+ls -lah
+```
+```
+-rw-r-xr--+  1 coonrod  is.racs.pirg.bgmp  20G Jul 30  2018 1294_S1_L008_R1_001.fastq.gz
+-rw-r-xr--+  1 coonrod  is.racs.pirg.bgmp 2.6G Jul 30  2018 1294_S1_L008_R2_001.fastq.gz
+-rw-r-xr--+  1 coonrod  is.racs.pirg.bgmp 2.8G Jul 30  2018 1294_S1_L008_R3_001.fastq.gz
+-rw-r-xr--+  1 coonrod  is.racs.pirg.bgmp  21G Jul 30  2018 1294_S1_L008_R4_001.fastq.gz
+```
+* How many lines are in each file? (How many records are there)
+```
+zcat [filename] | wc -l 
+```
+
+```
+1452986940 1294_S1_L008_R1_001.fastq.gz 
+1452986940 1294_S1_L008_R2_001.fastq.gz
+1452986940 1294_S1_L008_R3_001.fastq.gz
+1452986940 1294_S1_L008_R4_001.fastq.gz
+```
+### Determine which files contain the indexes, and which contain the paired end reads containing the biological data of interest. Create a table and label each file with either read1, read2, index1, or index2.
+
+* considered results of ls -lah 
+
+###Determine the length of the reads in each file.
+```
+zcat [filename] | sed -n '2~4p' | awk '{print length($0)}' | head -4
+```
+###Determine the phred encoding for these data.
+* When looking at the qs score letters, we see letters AND SYMBOLS that fall in the +33 range 
+
+# PART 2- Develop an algorithm to de-multiplex the samples
+* Worked with Claire and Varsheni to visualize pipeline on whiteboard, picture of diagram on phone. 
+
+
