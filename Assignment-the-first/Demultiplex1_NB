@@ -43,3 +43,112 @@ zcat [filename] | sed -n '2~4p' | awk '{print length($0)}' | head -4
 * Worked with Claire and Varsheni to visualize pipeline on whiteboard, picture of diagram on phone. 
 
 
+____________________________________
+07/26/24
+____________________________________
+
+#PART 1 - Quality Score Distribution per-nudelotide 
+Generate a per base distribution of quality scores for read1, read2, index1, and index2. Average the quality scores at each position for all reads and generate a per nucleotide mean distribution as you did in part 1 of PS4 in Bi621. (NOTE! Do NOT use the 2D array strategy from PS9 - you WILL run out of memory!)
+
+#Turn in the 4 histograms.
+* Referenced PS4 heavily 
+* Created....
+    * part1.py --> code to take fq files --> histograms of avg qs PER POSITION 
+    * Created sbatch scripts to run this .py script on all 4 sequence fqs (R1-R4) 
+        ```
+        index1.sh  index2.sh  read1.sh  read2.sh
+        ```
+* Submitting scripts to create histograms 
+sbatch index1.sh
+sbatch index2.sh
+sbatch read1.sh
+sbatch read2.sh
+
+```
+(base) [kenlai@n0353 Assignment-the-first]$ sbatch index1.sh
+Submitted batch job 7641703
+(base) [kenlai@n0353 Assignment-the-first]$ sbatch index2.sh
+Submitted batch job 7641705
+(base) [kenlai@n0353 Assignment-the-first]$ sbatch read1.sh
+Submitted batch job 7641706
+(base) [kenlai@n0353 Assignment-the-first]$ sbatch read2.sh
+Submitted batch job 7641708
+```
+--- fixed to a bar graph, was making dot plots instead before: 
+```
+(bgmp_py312) [kenlai@n0352 Assignment-the-first]$ sbatch index1.sh
+Submitted batch job 7641936
+(bgmp_py312) [kenlai@n0352 Assignment-the-first]$ sbatch index2.sh
+Submitted batch job 7641937
+(bgmp_py312) [kenlai@n0352 Assignment-the-first]$ sbatch read1.sh
+Submitted batch job 7641938
+(bgmp_py312) [kenlai@n0352 Assignment-the-first]$ sbatch read2.sh
+Submitted batch job 7641939
+```
+* O/E SUMMMARIES 
+```
+INDEX1: 
+Percent of CPU this job got: 98%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 11:26.48
+Exit status: 0
+```
+```
+INDEX2: 
+Percent of CPU this job got: 99%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 11:25.62
+Exit status: 0
+```
+
+
+#What is a good quality score cutoff for index reads and biological read pairs to utilize for sample identification and downstream analysis, respectively? Justify your answer.
+
+A good quality score cutoff for index reads and biological read pairs is >= 26. For optimal results, I would increase the threshold to 30 even. Previous research by [Wright et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5097354/#:~:text=By%20filtering%20the%20index%20reads,maintaining%2088%20%25%20of%20total%20reads.) suggested filtering index reads by >= 26 to reduce 'sample cross-talk'. [illumina](https://www.illumina.com/science/technology/next-generation-sequencing/plan-experiments/quality-scores.html#:~:text=Illumina%20Sequencing%20Quality%20Scores,sequencing%20applications%2C%20including%20clinical%20research.) on the other hand states that a quality score of at least 30 is ideal for clinical research and other sequencing-based applications. 
+
+
+* 30 --> [illumina](https://www.illumina.com/science/technology/next-generation-sequencing/plan-experiments/quality-scores.html#:~:text=Illumina%20Sequencing%20Quality%20Scores,sequencing%20applications%2C%20including%20clinical%20research.), and this holds true for my plots (all positions have avg above). 
+
+* 26 <= [a research study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5097354/#:~:text=By%20filtering%20the%20index%20reads,maintaining%2088%20%25%20of%20total%20reads.)
+
+
+#How many indexes have undetermined (N) base calls? (Utilize your command line tool knowledge. Submit the command(s) you used. CHALLENGE: use a one-line command)
+
+Index1: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
+
+3976613
+
+```
+Index2: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
+
+3329901
+```
+
+I LIED THIS IS WRONG, THEY WANT THE # of indexes with N in it, not the total N count in each seq. TRY AGAIN: 
+
+Index1: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | sort | uniq -c | grep 'N' | wc -l
+
+9198
+```
+Index2: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | sort| uniq -c | grep 'N' | wc -l
+
+6743
+```
+
+
+TRYING TO COUNT NOT UNIQUELY:
+YEILDS SAME RESULTS AS FIRST ATTEMPT 
+Index 1: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -c 'N'
+3976613
+```
+Index 2: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -c 'N'

@@ -1,7 +1,8 @@
 # Assignment the First
-
+Kenneth Lai 
 ## Part 1
 1. Be sure to upload your Python script. Provide a link to it here:
+```https://github.com/klai22/Demultiplex/blob/master/Assignment-the-first/part1.py```
 
 | File name | label | Read length | Phred encoding |
 |---|---|---|---|
@@ -12,8 +13,49 @@
 
 2. Per-base NT distribution
     1. Use markdown to insert your 4 histograms here.
-    2. **YOUR ANSWER HERE**
-    3. **YOUR ANSWER HERE**
+    
+|Index 1 (R2)| Index 2 (R3) |
+|---|---|
+| ![alt text](index1_qs_dist.png)|![alt text](index2_qs_dist.png)|
+
+|Read1 (R1)| Read2 (R4)|
+|---|---|
+| ![alt text](read1_qs_dist.png)|![alt text](read2_qs_dist.png)|
+
+
+2. What is a good quality score cutoff for index reads and biological read pairs to utilize for sample identification and downstream analysis, respectively? Justify your answer.
+
+    A good quality score cutoff for index reads and biological read pairs is >= 26. For stricter parameters and more optimal results, I would increase the threshold to 30 even. Previous research by [Wright et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5097354/#:~:text=By%20filtering%20the%20index%20reads,maintaining%2088%20%25%20of%20total%20reads.) suggested filtering index reads by >= 26 to reduce 'sample cross-talk'. [Illumina](https://www.illumina.com/science/technology/next-generation-sequencing/plan-experiments/quality-scores.html#:~:text=Illumina%20Sequencing%20Quality%20Scores,sequencing%20applications%2C%20including%20clinical%20research.) on the other hand states that a quality score of at least 30 is ideal for clinical research and other sequencing-based applications. 
+
+3. VERSION 1: Counting the NUMBER OF UNIQUE BARCODES w/ N in them 
+
+* Index1: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | sort | uniq -c | grep 'N' | wc -l
+
+9198
+```
+* Index2: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | sort| uniq -c | grep 'N' | wc -l
+
+6743
+```
+3. VERSION 2: Counting the NUMBER OF EVERY BARCODES w/ N in them (DOES-double-count duplicates of same barcodes w/ N in them)
+* Index1: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
+
+3976613
+
+```
+* Index2: 
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
+
+3329901
+```
+
     
 ## Part 2
 1. Define the problem
@@ -80,7 +122,7 @@ Output: /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-output_FAST
     3. Test examples for individual functions
     4. Return statement
 ```
-def reverse_complement(letter: str) -> str:
+def reverse_complement(sequence: str) -> str:
     '''takes a DNA seq. & generates its complementary sequence, utilizes a dictionary including correct base pairings'''
     return reverse_complement_sequence
 Input: DNA str (template seq.)
@@ -98,7 +140,7 @@ Expected output: R1_new OR R4_new
 ```
 
 ```
-def calc_qs():
+def calc_qs(letter: str) --> int:
     '''Converts every letter in qs_line to a score, calc.s either the average or median (TBD) of a collection of quality scores'''
     #Will have to call bioinfo.convert_phred()
     return qs_mean 
