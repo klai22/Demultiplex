@@ -25,35 +25,20 @@ Kenneth Lai
 
 2. What is a good quality score cutoff for index reads and biological read pairs to utilize for sample identification and downstream analysis, respectively? Justify your answer.
 
-    A good quality score cutoff for index reads and biological read pairs is >= 26. For stricter parameters and more optimal results, I would increase the threshold to 30 even. Previous research by [Wright et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5097354/#:~:text=By%20filtering%20the%20index%20reads,maintaining%2088%20%25%20of%20total%20reads.) suggested filtering index reads by >= 26 to reduce 'sample cross-talk'. [Illumina](https://www.illumina.com/science/technology/next-generation-sequencing/plan-experiments/quality-scores.html#:~:text=Illumina%20Sequencing%20Quality%20Scores,sequencing%20applications%2C%20including%20clinical%20research.) on the other hand states that a quality score of at least 30 is ideal for clinical research and other sequencing-based applications. 
+    A good quality score cutoff for index reads is >= 30. In cases where index sequencing performed poorly, I wouldn't suggest decreasing the threshold any lower than 26 as it may result in false sample assignment. Previous research by [Wright et al.](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5097354/#:~:text=By%20filtering%20the%20index%20reads,maintaining%2088%20%25%20of%20total%20reads.) suggested filtering index reads by >= 26 to reduce 'sample cross-talk'. [Illumina](https://www.illumina.com/science/technology/next-generation-sequencing/plan-experiments/quality-scores.html#:~:text=Illumina%20Sequencing%20Quality%20Scores,sequencing%20applications%2C%20including%20clinical%20research.) on the other hand states that a quality score of at least 30 is ideal for clinical research and other sequencing-based applications. Personally, I would choose 30 for this assignment since the lowest average quality scores observed in our quality-score distributions fell around ~31. 
 
-3. VERSION 1: Counting the NUMBER OF UNIQUE BARCODES w/ N in them 
+    On the other hand, I would sugggest setting a quality score threshold of ~26 for biological read pairs. However, the threshold for these reads don't need to be as strict as the indexes because the following step in this pipeline (genomic alignment) will filter out poor reads anyways. 
 
-* Index1: 
-```
-$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | sort | uniq -c | grep 'N' | wc -l
-
-9198
-```
-* Index2: 
-```
-$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | sort| uniq -c | grep 'N' | wc -l
-
-6743
-```
 3. VERSION 2: Counting the NUMBER OF EVERY BARCODES w/ N in them (DOES-double-count duplicates of same barcodes w/ N in them)
-* Index1: 
+* Index 1: 
 ```
-$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
-
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -c 'N'
 3976613
-
 ```
-* Index2: 
+* Index 2: 
 ```
-$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -o "N" | wc -l
-
-3329901
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -c 'N'
+3328051
 ```
 
     
