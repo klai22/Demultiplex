@@ -1,8 +1,13 @@
 Kenny's Notebook for Dumultiplex 3 Assignment 
+
 [on talapas...]
+
 Data Location: /projects/bgmp/shared/2017_sequencing
+
 TEST Input Location: /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ
+
 Notebook/WD Location: /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-third
+
 Creating interactive sessions: srun --account=bgmp -p bgmp -N 1 -c 4 --mem=100G -t 6:00:00 --pty bash 
 _____________________
 07/30/24
@@ -10,8 +15,8 @@ _____________________
 * Started writing demultiplexing script: demultiplex.py 
 
 #NOTES from class: 
-# import gzip ---> gzip.open for these files. 
-# leslie said to amke sure you open files separately outside of the with gzip.open block!, otherwise you don't want to open each file every singel time in the for loop 
+* import gzip ---> gzip.open for these files. 
+* leslie said to amke sure you open files separately outside of the with gzip.open block!, otherwise you don't want to open each file every singel time in the for loop 
 
 * copying bioinfo.py --> repo 
 
