@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-#BFORE RUNNING, BE SURE TO DELETE ALL EXISTING OUPUT FILES (UNK_R1.fq, hopped_R1.fq, etc.) BC IT WILL NOT OVERWRITE, IT WILL JUST APPEND TO EXISTING FILES' CONTENTS 
 
-#./demultiplex.py -R1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -l read1
-#./part1.py -R2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz -l read2
-#./part1.py -R3 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz -l index1
-#./part1.py -R4 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz -l index2
 
-#./demultiplex.py -R1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz -R2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz -R3 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz -R4 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz -bars /projects/bgmp/shared/2017_sequencing/indexes.txt
+# test_files
+#./demultiplex.py -R2qs 29 -R3qs 26 -hd 3 -R1 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R1.fq.gz -R2 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R2.fq.gz -R3 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R3.fq.gz -R4 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R4.fq.gz -bars /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/indexes.txt
 
-#./demultiplex.py -R1 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R1.fq.gz -R2 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R2.fq.gz -R3 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R3.fq.gz -R4 /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/R4.fq.gz -bars /home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/TEST-input_FASTQ/indexes.txt -qs 30
 
+# MANAGING INPUTS 
 #setting get_args 
 import argparse
 #defining input args 
@@ -20,201 +16,56 @@ def get_args():
     parser.add_argument("-R3")
     parser.add_argument("-R4")
     parser.add_argument("-bars")
-    parser.add_argument("-qs")
+    parser.add_argument("-R2qs")
+    parser.add_argument("-R3qs")
+    parser.add_argument("-hd")
     return parser.parse_args()
 
 #setting input args--> variables 
 args=get_args()
-R1=args.R1
-R2=args.R2
-R3=args.R3
-R4=args.R4
-qs_threshold=int(args.qs)
+R1a=args.R1
+R2a=args.R2
+R3a=args.R3
+R4a=args.R4
 known_barcodes=args.bars
+qs_threshold_R2=int(args.R2qs)
+qs_threshold_R3=int(args.R3qs)
+ham_dist_threshold=int(args.hd)
 
 # IMPORTING MODULES 
 import bioinfo
 import gzip
 
-# DEFINING FXNS 
-def reverse_complement(sequence: str) -> str:
-    '''takes a DNA seq. & generates its complementary sequence, utilizes a dictionary including correct base pairings
-    Input: DNA str (template seq.)
-    Expected output: DNA str (complementary seq.)
+# DEFINING FXNS - script specific 
+def open_files():
     '''
-    #creating a dict for base-pairing 
-    DNA_dict ={
-        'A':'T',
-        'T':'A',
-        'C':'G',
-        'G':'C',
-        'a':'t',
-        't':'a',
-        'c':'g',
-        'g':'c',
-    }
-    #create empty string 
-    rev_seq=""
-    #complementing w/ dict. / populating string 
-        #rmbr to reversed() bc the complement will want to be presented 5'->3' 
-    for base in reversed(sequence):
-        #append complementary base (from dict) to empty string for every base in seq. 
-        rev_seq+=DNA_dict[base]
-
-    return rev_seq
-
-assert reverse_complement("GGG") == "CCC", "wrong reverse_complement for seq.'GGG'"
-print("Your reverse_complement function is working! Nice job")
-
-def R2_barcode_dict(barcode_fq):
-    '''Creates a dict holding barcode seq.s (value) for each seq. id/ header (key)
-    Input: R2 
-    Output: dictionary of barcodes' records 
+    Creating a dictionary that holds the file paths (instead of with open('w') bc that would take too long )
     '''
-    with gzip.open(barcode_fq,'rt') as file:
-        #initalize empty dict 
-        records = {}
-        #loop through records of barcodes_fq
-        while True: 
-            header = file.readline().strip() 
-            #fxn knows to stop when out of records to process 
-            if not header: 
-                break 
-            seq= file.readline().strip()
-            #skipping + & qs lines 
-            file.readline()
-            file.readline()
-            records[header]=seq
-    return records
+    all_files={}
+    #For barcode pairs 
+    for barcode in known_indexes:
+        #Files for barcode-pairs (setting keys )
+        name1=f"outputs/{barcode}-{barcode}_R1.fq"
+        name2=f"outputs/{barcode}-{barcode}_R2.fq"
+        #Opening files for writing (Setting values )
+        all_files[name1]=open(name1,"w")
+        all_files[name2]=open(name2,"w")
+    #For UNK + HOPPED + updated R1/R4 files w/ barcoded-headers 
+    all_files["outputs/UNK_R1.fq"]=open("outputs/UNK_R1.fq","w")
+    all_files["outputs/UNK_R2.fq"]=open("outputs/UNK_R2.fq","w")
+    all_files["outputs/Hopped_R1.fq"]=open("outputs/Hopped_R1.fq","w")
+    all_files["outputs/Hopped_R2.fq"]=open("outputs/Hopped_R2.fq","w")
+    return all_files
+    
+#OPENING ALL FILES 
+R1=gzip.open(R1a,"rt")
+R2=gzip.open(R2a,"rt")
+R3=gzip.open(R3a,"rt")
+R4=gzip.open(R4a,"rt")
 
-def R3_barcode_dict(barcode_fq):
-    '''Creates a dict holding barcode seq.s (value) for each seq. id/ header (key). Accounts for need to reverse-complement R3 seq.
-    Input: R3
-    Output: dictionary of barcodes' records 
-    '''
-    with gzip.open(barcode_fq,'rt') as file:
-        #initalize empty dict 
-        records = {}
-        #loop through records of barcodes_fq
-        while True: 
-            header = file.readline().strip() 
-            #fxn knows to stop when out of records to process 
-            if not header: 
-                break 
-            seq= file.readline().strip()
-            rseq=reverse_complement(seq)
-            #skipping + & qs lines 
-            file.readline()
-            file.readline()
-            records[header]=rseq
-    return records
-
-def index_seq_to_header(read_fq,R2,R3,new_fq):
-    '''Created new version of R1 or R4 w/ 'R2-R3' in the ID/headers of each record
-    Input:R1 OR R4 [read_fq](read fq files),R2, R3 (barcode fq files)
-    Expected output: name of new fq file [new_fq]
-    '''
-    #Create R2 & R3 record dictionaries 
-    R2_records=R2_barcode_dict(R2)
-    R3_records=R3_barcode_dict(R3)
-
-    #WRITE a NEW R1/R4 file w/ updated headers(include barcodes at the end)
-    #opening the read file, creating the updated version of read_file 
-    with gzip.open(read_fq,'rt') as read_file, open(new_fq,'w') as output_file:
-        #looping through records of read file 
-        while True: 
-            header=read_file.readline().strip()
-            #fxn knows to stop when out of records to process 
-            if not header: 
-                break
-            seq=read_file.readline().strip()
-            plus=read_file.readline().strip()
-            qs=read_file.readline().strip()
-        
-            #Writing the updated version of header w/ R2-R3 suffix 
-                #getting barcodes associated w/ current header ID 
-            R2_seq=R2_records[header]
-            R3_seq=R3_records[header]
-                #writing new header 
-            new_header=f"{header} {R2_seq}-{R3_seq}"
-
-            #Writing the modified record to output file 
-            output_file.write(f"{new_header}\n{seq}\n{plus}\n{qs}\n")
-    return output_file
-
-#CREATING A FULL FXN TO ORGANIZE THE R1/R4 file depending on various criteria (Demultiplexing)
-def demultiplex(label,read_fq,R2,R3):
-    '''Sorts each read for given R1 or R4 fq (w/ barcodes in headers) into correct output files
-    Input:
-    R1.fq OR R4.fq [read_fq](updated read fq files from index_seq_to_header() fxn)
-    R2, R3 (barcode fq files)
-    label = if R1.fq --> "R1". if R4.fq --> "R2" 
-    '''
-    #opening the read file 
-    with open(read_fq,'r') as read_file:
-        #looping through records of read file 
-        while True: 
-            header=read_file.readline().strip()
-            #fxn knows to stop when out of records to process 
-            if not header: 
-                break
-            seq=read_file.readline().strip()
-            plus=read_file.readline().strip()
-            qs=read_file.readline().strip()
-
-            #Isolating R2 & R3 barcodes from header 
-                #split sequence up by SPACES
-                #assumes the followin header structure: @K00337:83:HJKJNBBXX:8:1101:30086:1683 2:N:0:1 AAA-AAA
-            parts = header.split()
-                #isolate "R2-R3" suffix
-            barcode_pair = parts[-1] #[-1] bc it is the very last part of string 
-                #furthur split the barcode_pair 
-            barcode_pair_parts = barcode_pair.split('-')
-                #isolate R2 vs. R3 
-            R2_index = barcode_pair_parts[0]
-            R3_index = barcode_pair_parts[1] 
-
-            #CATEGORIZING RECORDS/READS
-            #Checking if R2 & R3 barcodes are (NOT) in known_indexes 
-            if R2_index not in known_indexes and R3_index not in known_indexes:
-                #appending record to UNK file ("a" appends record to file without overwritng)
-                with open(f"UNK_{label}.fq","a") as unk_file: 
-                    unk_file.write(f"{header}\n{seq}\n{plus}\n{qs}\n")
-            else:
-                #Checking if R2 barcode (doesn't)= R3 barcode 
-                if R2_index != R3_index:
-                    with open(f"Hopped_{label}.fq","a") as hopped_file:
-                        hopped_file.write(f"{header}\n{seq}\n{plus}\n{qs}\n")
-                else: 
-                    #Checking if reads fall below QS threshold 
-                        #Converting QS line (ASCII-->Phred (assumes +33 encoding))
-                    phred_score=bioinfo.convert_phred(qs)
-                        #Calc. AVG OR MEDIAN OR ___some per base method, would need to reconfig. code...
-                    #final_score=bioinfo.qual_score(phred_score) OR bioinfo.calc_median(#turnphred_score-->a list) or ???
-                        #Filtering based on threshold
-                    if final_score < qs_threshold:
-                        with open(f"UNK_{label}.fq","a") as unk_file: 
-                            unk_file.write(f"{header}\n{seq}\n{plus}\n{qs}\n")
-                    else: #if => qs_threshold
-                        #Passed all filters, add record to unique barcode-pair labeled .fq files
-                        with open(f"{barcode_pair}_{label}.fq","a") as unk_file: 
-                            unk_file.write(f"{header}\n{seq}\n{plus}\n{qs}\n")
-
-
-
-                    #QUESTIONS: 
-                    #do we check index qs too for filtering reads, or only that of 'actual seq.s'?
-                    #QS threshold setting: comparing means, medians, or per base(discard if even 1 base falls below threshold)? 
-                
-# EXECUTING FUNCTIONS 
-
-#WRITING NEW R1 & R4 files w/ updated headers: 
-index_seq_to_header(R1,R2,R3,'R1.fq')
-index_seq_to_header(R4,R2,R3,'R4.fq')
-
-#ISOLATING BARCODES COLUMN of known_barcodes.txt --> a list of known barcodes 
-#initialize empty list
-known_indexes=[]
+#Convert known_indexes --> a set of barcodes (isolating barcodes col. of known_barcodes.txt)
+#initialize empty set
+known_indexes=set()
 #open known indexes files 
 with open(known_barcodes,'r') as file:
     #skipping header line 
@@ -223,49 +74,153 @@ with open(known_barcodes,'r') as file:
     for line in file: 
         line_parts = line.strip().split('\t')
         #append to list (column 5 (4 bc 0-based) has barcode seq.s)
-        known_indexes.append(line_parts[4])
+        known_indexes.add(line_parts[4])
+
+# INITIALIZING MASTER OBJ.s 
+#Creating files dict. (so we can write / categorize the reads into new files)
+all_files=open_files()
 
 
-#Testing my Fxns 
-index_seq_to_header(R1,R2,R3,'test.fq')
-demultiplex("R1","test.fq",R2,R3)
-#print(known_indexes)
+# DEMULTIPLEXING 
+#Initalizing record-variables 
+record_R1="" #empty string to hold R1's record (4 lines @ a time) during each loop 
+record_R4="" #empty string to hold R4's record during each loop 
+#initalizing counter-variables 
+counter = 0 #tracks which line we're on (within current record)
+i =0 # tracks which record we're on ]
 
+#READING FILES (simutaneously) --> FOR EVERY LINE in FILE.......
+for line_R1,line_R2,line_R3,line_R4 in zip(R1,R2,R3,R4): #zip() connects each line-variable to its source-file
+    i+=1 #incrementing record counter --> move to next record 
+    line_R1=line_R1.strip() #reads same line b/w all 4 files @ a time
+    line_R2=line_R2.strip()
+    line_R3=line_R3.strip()
+    line_R4=line_R4.strip()
 
+    #ISOLATING INDEX BARCODES & QS LINES for current record
+    #Isolate Seq. line 
+    if i%4==2:
+        R2_barcode = str(line_R2)
+        R3_barcode_a = str(line_R3)
+        #Rev. Comp. R3_barcode 
+        R3_barcode = bioinfo.reverse_complement(R3_barcode_a)
+    #Isolate QS line 
+    if i%4==0:
+        R2_qs=str(line_R2)
+        R3_qs=str(line_R3)
 
+    #ISOLATING RECORD (1 @ a time): reading lines (loop) until we've built a record (4 lines)
+    #Appending current line to record_R(x)-variables until end of current record is reached (counter =4)
+    if counter < 4: 
+        record_R1+=f"{line_R1}\n"
+        record_R4+=f"{line_R4}\n"
+        counter+=1 #increment line counter --> move to next line 
+        #once we each the end of current record (4th line, counter = 4), reset line count bfore incremeneting to nxt record via i+=1^^^^
+    elif counter ==4:
+        counter=1
 
+        #UPDATE HEADERS: Now that we've isolated a full record, APPEND BARCODE PAIRS TO HEADERS 
+        #Creating barcode-pair str 
+        barcode_pair=f"{R2_barcode}-{R3_barcode}"
+        #Creating updated headers (ID w/ barcode-pair) {splitting by \n, appending barcode_pair to ID line[0]}
+            #Resetting Variables 
+        ID1=""
+        ID4=""
+        R1_OD=""
+        R4_ID=""
+            #Updating Variables
+        ID1=record_R1.split('\n')[0]
+        ID4=record_R4.split('\n')[0]
+        R1_ID=f"{ID1} {barcode_pair}"
+        R4_ID=f"{ID4} {barcode_pair}"
 
+        #Replacing current headers (ID only, no barcodes) OF CURRENT RECORD w/ updated headers 
+            #Gathering non header lines from records to create NEW RECORD OBJ.(s) 
+        R1_seq=record_R1.split('\n')[1]
+        R1_plus=record_R1.split('\n')[2]
+        R1_qs=record_R1.split('\n')[3]
+        R4_seq=record_R4.split('\n')[1]
+        R4_plus=record_R4.split('\n')[2]
+        R4_qs=record_R4.split('\n')[3]
+            #Create new record obj.s w/  updated headers (barcode pairs)
+        record_R1_updated = f"{R1_ID}\n{R1_seq}\n{R1_plus}\n{R1_qs}"
+        record_R4_updated = f"{R4_ID}\n{R4_seq}\n{R4_plus}\n{R4_qs}"
 
-#Opening Input Files 
-#[with open] input .fq files: R1 & R4 (reads), R2 & R3 (indexes),known_barcodes.txt(lists known barcodes):
-    #Looping through R3 barcodes & collecting associated R2 barcodes (same ID)
-    #[For] every seq.line in R3:
-        #R3C_variable = reverse_complement(R3 seq.)
-        #R2_variable = isolated seq. from same read as current R3C _variable (taken from R2) 
-    #Creating new versions of R1/R4 with IDs that include 'R2-R3 barcodes' in name
-        #R1_new = index_seq_to_header(R1,R3C_variable,R2_variable)
-        #R4_new = index_seq_to_header(R4,R3C_variable,R2_variable)
-    #Looping through every record of updated R1/R4 & checking for matches in known_barcodes.txt
-    #REPEAT ALL STEPS BELOW FOR R4 AS WELL! 
-    #[For] every record in R1_new:
-        #Set record equal to a variable 
-            #record = current record
-        #isolate R2 & R3 barcodes from ID --> check to see if they have matches in known_barcodes.txt
-        #False --> write_record_to_file(record,UNK_R1.fq)
-        #True -->:
-            #Is R2 barcode == R3 barcode?:
-                #False --> write_record_to_file(record,Hopping_R1.fq) #indicative of index hopping
-                #True --> (barcodes are complementary):
-                    #Isolate QS line associated w/ current header/ID
-                #Calc. avg/median QS for current record 
-                    #qs = calc_qs()
-                    #Test if current record's QS meets threshold 
-                        #Falls below threshold --> write_record_to_file(record,UNK_R1.fq)
-                    #printing record in appropriate index-pair file
-                        #Meets QS threshold --> write_record_to_file(record,{R2}-{R3}_R1.fq)
+        #DEMULTIPLEX/FILTERING: sort record into appropriate file(s) 
+        #Filtering: 
+        #UNK_R(x) files 
+            #if 3 bases in R2 < 29 or 3 bases in R3 qs < 26 OR if R2 or R3 barcodes NOT in known indexes, write record --> UNK_R(x).fq
+        if bioinfo.hamdist_qs(R2_qs,ham_dist_threshold, qs_threshold_R2)==False or bioinfo.hamdist_qs(R3_qs,ham_dist_threshold, qs_threshold_R3)==False or R2_barcode not in known_indexes or R3_barcode not in known_indexes: 
+            #writing into file via all_files dict.
+            all_files["outputs/UNK_R1.fq"].write(f"{record_R1_updated}\n")
+            all_files["outputs/UNK_R2.fq"].write(f"{record_R4_updated}\n")
+        #Hopped_R(x).fq 
+            #if R2/R3 barcodes DO NOT MATCH, read is considred a hopped read (mismatched indexes)
+        elif str(R2_barcode) != str(R3_barcode):
+            all_files["outputs/Hopped_R1.fq"].write(f"{record_R1_updated}\n")
+            all_files["outputs/Hopped_R2.fq"].write(f"{record_R4_updated}\n")
+            # all QC-filters passed at this point! 
+        #R2-R3_R(x).fq
+            #sorting records by sample(R2-R3 barcode pairs)
+        else:
+            all_files[f"outputs/{R2_barcode}-{R3_barcode}_R1.fq"].write(f"{record_R1_updated}\n")
+            all_files[f"outputs/{R2_barcode}-{R3_barcode}_R2.fq"].write(f"{record_R4_updated}\n")
+        #RESTTING RECORD & STARTING NEW RECORD
+        record_R1 = ""
+        record_R4 = ""
+        record_R1+=f"{line_R1}\n"
+        record_R4+=f"{line_R4}\n"
 
+#PROCESSING THE LAST record, all variables arte stores, just never got to run bc no final line to push past the elif counter ==4: gate
+if counter > 0:
+#UPDATE HEADERS: Now that we've isolated a full record, APPEND BARCODE PAIRS TO HEADERS 
+    #Creating barcode-pair str 
+    barcode_pair=f"{R2_barcode}-{R3_barcode}"
+    #Creating updated headers (ID w/ barcode-pair) {splitting by \n, appending barcode_pair to ID line[0]}
+        #Resetting Variables 
+    ID1=""
+    ID4=""
+    R1_OD=""
+    R4_ID=""
+        #Updating Variables
+    ID1=record_R1.split('\n')[0]
+    ID4=record_R4.split('\n')[0]
+    R1_ID=f"{ID1} {barcode_pair}"
+    R4_ID=f"{ID4} {barcode_pair}"
 
+    #Replacing current headers (ID only, no barcodes) OF CURRENT RECORD w/ updated headers 
+        #Gathering non header lines from records to create NEW RECORD OBJ.(s) 
+    R1_seq=record_R1.split('\n')[1]
+    R1_plus=record_R1.split('\n')[2]
+    R1_qs=record_R1.split('\n')[3]
+    R4_seq=record_R4.split('\n')[1]
+    R4_plus=record_R4.split('\n')[2]
+    R4_qs=record_R4.split('\n')[3]
+        #Create new record obj.s w/  updated headers (barcode pairs)
+    record_R1_updated = f"{R1_ID}\n{R1_seq}\n{R1_plus}\n{R1_qs}"
+    record_R4_updated = f"{R4_ID}\n{R4_seq}\n{R4_plus}\n{R4_qs}"
 
-#NOTES: 
-# import gzip ---> gzip.open for these files. 
-# leslie said to amke sure you open files separately from the for loop, toehrwise you don't want to open each file every singel time in the for loop 
+    #DEMULTIPLEX/FILTERING: sort record into appropriate file(s) 
+    #Filtering: 
+    #UNK_R(x) files 
+        #if 3 bases in R2 < 29 or 3 bases in R3 qs < 26 OR if R2 or R3 barcodes NOT in known indexes, write record --> UNK_R(x).fq
+    if bioinfo.hamdist_qs(R2_qs,ham_dist_threshold, qs_threshold_R2)==False or bioinfo.hamdist_qs(R3_qs,ham_dist_threshold, qs_threshold_R3)==False or R2_barcode not in known_indexes or R3_barcode not in known_indexes: 
+        #writing into file via all_files dict.
+        all_files["outputs/UNK_R1.fq"].write(f"{record_R1_updated}\n")
+        all_files["outputs/UNK_R2.fq"].write(f"{record_R4_updated}\n")
+    #Hopped_R(x).fq 
+        #if R2/R3 barcodes DO NOT MATCH, read is considred a hopped read (mismatched indexes)
+    elif str(R2_barcode) != str(R3_barcode):
+        all_files["outputs/Hopped_R1.fq"].write(f"{record_R1_updated}\n")
+        all_files["outputs/Hopped_R2.fq"].write(f"{record_R4_updated}\n")
+        # all QC-filters passed at this point! 
+    #R2-R3_R(x).fq
+        #sorting records by sample(R2-R3 barcode pairs)
+    else:
+        all_files[f"outputs/{R2_barcode}-{R3_barcode}_R1.fq"].write(f"{record_R1_updated}\n")
+        all_files[f"outputs/{R2_barcode}-{R3_barcode}_R2.fq"].write(f"{record_R4_updated}\n")
+    
+
+#CLOSING ALL FILES: By using all_files dict. to write, files are opened & never closed. Need to close all files oepend by dict.
+for files in all_files.values():
+    files.close()
