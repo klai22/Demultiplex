@@ -382,6 +382,68 @@ def open_files():
 
 * Transfered hamming distance qs fxn & reverse comp fxn to bioinfo.py module instead to save space. 
 
+* Created a shell script to sbatch the demultiplex.py script 
+
+### !submitted job for first time, will check back another time to see if it worked....!
+```
+$ sbatch demultiplex.sh
+Submitted batch job 7858367
+```
+--> FAILED 
+* error 
+    ```
+    Traceback (most recent call last):
+  File "/gpfs/projects/bgmp/kenlai/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-third/./demultiplex.py", line 106, in <module>
+    R3_barcode = bioinfo.reverse_complement(R3_barcode_a)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/projects/bgmp/kenlai/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-third/bioinfo.py", line 102, in reverse_complement
+    rev_seq+=DNA_dict[base]
+             ~~~~~~~~^^^^^^
+KeyError: 'N'
+    ```
+* Summary: 
+```
+Percent of CPU this job got: 6%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.00
+Exit status: 1
+```
+* SOLUTION ATTEMPT:Fixed rev_comp fxn in bioinfo.py to account for Ns: 
+```
+def reverse_complement(sequence: str) -> str:
+    '''takes a DNA seq. & generates its complementary sequence, utilizes a dictionary including correct base pairings
+    Input: DNA str (template seq.)
+    Expected output: DNA str (complementary seq.)
+    '''
+    #creating a dict for base-pairing 
+    DNA_dict ={
+        'A':'T',
+        'T':'A',
+        'C':'G',
+        'G':'C',
+        'N':'N',
+        'a':'t',
+        't':'a',
+        'c':'g',
+        'g':'c',
+        'n':'n',
+    }
+    #create empty string 
+    rev_seq=""
+    #complementing w/ dict. / populating string 
+        #rmbr to reversed() bc the complement will want to be presented 5'->3' 
+    for base in reversed(sequence):
+        #append complementary base (from dict) to empty string for every base in seq. 
+        rev_seq+=DNA_dict[base]
+    return rev_seq
+
+```
+* Resubmitted sbatch w/ updated bioinfo.py 
+```
+$ sbatch demultiplex.sh
+Submitted batch job 7858925
+```
+
+
 TO DO: 
 * double check your qs threshold methods (different for R2 vs. R3, hamming distance of 3)
 

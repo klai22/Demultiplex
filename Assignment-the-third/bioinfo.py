@@ -88,10 +88,12 @@ def reverse_complement(sequence: str) -> str:
         'T':'A',
         'C':'G',
         'G':'C',
+        'N':'N',
         'a':'t',
         't':'a',
         'c':'g',
         'g':'c',
+        'n':'n',
     }
     #create empty string 
     rev_seq=""
@@ -176,6 +178,7 @@ if __name__ == "__main__":
     print("average quality score succesfully calculated. ")
 
     assert reverse_complement("GGG") == "CCC", "wrong reverse_complement for seq.'GGG'"
+    assert reverse_complement("NnN") == "NnN", "wrong reverse_complement for seq.'NnN'"
     print("Your reverse_complement function is working! Nice job")
 
     assert hamdist_qs("@@@88",2,30) == False, "wrong ham_dist qs assesment for '@@@888'"
