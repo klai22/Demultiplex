@@ -43,9 +43,11 @@ Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). 
 |![alt text](Overall_Distribution.png)|
 |distribution of all reads based on barcode pairings. Demultiplexing filtering thresholds: hamming distance = 3, index 1 qs = 29, index 2 qs = 26. |
 
+- Overall amount of index swapping = 0.2% of total reads 
 
 |Sample Distribution| Swapped Index Distribution|
 |---|---|
 |![alt text](Sample_Distribution.png)|![alt text](Swapped_Index_Distribution.png)|
 |distribution of reads w/ matching indexes|distribution of reads w/ unmatched indexes|
 
+- Percentage of reads from each sample = Sample Distribution Fig.
