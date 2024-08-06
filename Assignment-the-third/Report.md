@@ -33,6 +33,7 @@ Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). 
 * demultiplexing samples & creating barcode count table : 
 ```https://github.com/klai22/Demultiplex/blob/master/Assignment-the-third/demultiplex.py```
 * Analyzing barcode count table: 
+```https://github.com/klai22/Demultiplex/blob/master/Assignment-the-third/demux_stats.py```
 
 2. Report on Demultiplexing Results 
 
