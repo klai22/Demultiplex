@@ -444,6 +444,95 @@ Submitted batch job 7858925
 ```
 
 
+_____________________
+08/02/2024
+_____________________
+
+* job 7858925 ran succesfully, all output files seem to be correctly sorted 
+Summary: 
+```
+Percent of CPU this job got: 87%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 1:27:39
+Exit status: 0
+```
+
+* Addressing now: 
+Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). Make sure your folder is well organized and final output is clearly labeled/summarized (a markdown file would be much appreciated!!). Use your code to demultiplex the samples and report:
+- Percentage of reads from each sample
+- Overall amount of index swapping
+- Any figures/any other relevant data your code output
+
+
+* (added code to....) Making a table that counts the total # of read for each sample (barcode-pair ) --> will use this to answer Report questions: 
+    * ""Barcode_Pair_Counts.txt"" 
+
+
+* Re-ran script to make table (and turned hamming dist to set)
+```
+$ sbatch demultiplex.sh
+Submitted batch job 7874958
+```
+_____________________
+08/03/2024
+_____________________
+* in ""Barcode_Pair_Counts.txt"" , forgot to add newline characters, fixing: 
+demultiplex.py, line 248 
+```
+#REPORT Q: Writing Dict into a file: 
+with open("Barcode_Pair_Counts.txt",'w') as file:
+    file.writelines(f"Index1\tIndex2\tRead Count\n")
+    for key in index_pairs_dict:
+        file.writelines(f"{key[0]}\t{key[1]}\t{index_pairs_dict[key]}\n")
+```
+
+* rerunning: 
+```
+$ sbatch demultiplex.sh
+Submitted batch job 7890385
+```
+
+_____________________
+08/06/2024
+_____________________
+* job 7890385 ran succesfully! 
+```
+Percent of CPU this job got: 88%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 1:53:11
+Exit status: 0
+```
+
+* Assignment asks ```Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). Make sure your folder is well organized and final output is clearly labeled/summarized (a markdown file would be much appreciated!!). Use your code to demultiplex the samples and report:
+- Percentage of reads from each sample
+- Overall amount of index swapping
+- Any figures/any other relevant data your code output
+```
+
+* Creating a script to answer all these questions: ```demux_stats.py```
+
+--> Created 3 figures: 
+'Overall Distribution.png' = shows distributino between valid samples, hopped indexes, and unknowns 
+'Sample Distribution.png' = shows distribution of all valid samples 
+'Swapped Index Distribution.png' = shows distribution of all hopped indexes
+
+* submitted job to test automation:
+```
+$ sbatch demux_stats.sh
+Submitted batch job 7922265
+```
+```
+Percent of CPU this job got: 119%
+Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.77
+Exit status: 0
+```
+
+* Will be putting final report answer in ```Report.md```
+
+
+
+
+
+
 TO DO: 
+* change ham_dist fxn in bioinfo.py to use a SET INSTEAD OF A LIST (no .append) to make it faster 
 * double check your qs threshold methods (different for R2 vs. R3, hamming distance of 3)
 

@@ -35,6 +35,7 @@ ham_dist_threshold=int(args.hd)
 # IMPORTING MODULES 
 import bioinfo
 import gzip
+import itertools #REPORT Q: to make sample counting table 
 
 # DEFINING FXNS - script specific 
 def open_files():
@@ -80,6 +81,16 @@ with open(known_barcodes,'r') as file:
 #Creating files dict. (so we can write / categorize the reads into new files)
 all_files=open_files()
 
+#REPORT Q: Create a dictionary to hold every possible pair of known_indexes 
+    #init. dict. 
+index_pairs_dict={}
+    #Populating dict. w/ barcode pairs --> itertools.products populates a dict. w/ all permutations of items in given list 
+for barcode_pair in itertools.product(list(known_indexes),repeat=2):
+        #init. counter-value in dict. 
+    index_pairs_dict[barcode_pair]=0
+#adding unknown to dict. (for unknown barcode pairs )
+index_pairs_dict[("unknown","unknown")]=0
+
 
 # DEMULTIPLEXING 
 #Initalizing record-variables 
@@ -122,6 +133,8 @@ for line_R1,line_R2,line_R3,line_R4 in zip(R1,R2,R3,R4): #zip() connects each li
         #UPDATE HEADERS: Now that we've isolated a full record, APPEND BARCODE PAIRS TO HEADERS 
         #Creating barcode-pair str 
         barcode_pair=f"{R2_barcode}-{R3_barcode}"
+        #Report Q: making a tuple for to add to dict. 
+        barcode_pair_tuple=(R2_barcode,R3_barcode)
         #Creating updated headers (ID w/ barcode-pair) {splitting by \n, appending barcode_pair to ID line[0]}
             #Resetting Variables 
         ID1=""
@@ -154,17 +167,23 @@ for line_R1,line_R2,line_R3,line_R4 in zip(R1,R2,R3,R4): #zip() connects each li
             #writing into file via all_files dict.
             all_files["outputs/UNK_R1.fq"].write(f"{record_R1_updated}\n")
             all_files["outputs/UNK_R2.fq"].write(f"{record_R4_updated}\n")
+            #REPORTQ: adding to barcode_pair  dict. 
+            index_pairs_dict[("unknown","unknown")]+=1
         #Hopped_R(x).fq 
             #if R2/R3 barcodes DO NOT MATCH, read is considred a hopped read (mismatched indexes)
         elif str(R2_barcode) != str(R3_barcode):
             all_files["outputs/Hopped_R1.fq"].write(f"{record_R1_updated}\n")
             all_files["outputs/Hopped_R2.fq"].write(f"{record_R4_updated}\n")
+            #REPORTQ: adding to barcode_pair  dict.
+            index_pairs_dict[barcode_pair_tuple]+=1
             # all QC-filters passed at this point! 
         #R2-R3_R(x).fq
             #sorting records by sample(R2-R3 barcode pairs)
         else:
             all_files[f"outputs/{R2_barcode}-{R3_barcode}_R1.fq"].write(f"{record_R1_updated}\n")
             all_files[f"outputs/{R2_barcode}-{R3_barcode}_R2.fq"].write(f"{record_R4_updated}\n")
+            #REPORTQ: adding to barcode_pair  dict.
+            index_pairs_dict[barcode_pair_tuple]+=1
         #RESTTING RECORD & STARTING NEW RECORD
         record_R1 = ""
         record_R4 = ""
@@ -208,18 +227,29 @@ if counter > 0:
         #writing into file via all_files dict.
         all_files["outputs/UNK_R1.fq"].write(f"{record_R1_updated}\n")
         all_files["outputs/UNK_R2.fq"].write(f"{record_R4_updated}\n")
+        #REPORTQ: adding to barcode_pair  dict. 
+        index_pairs_dict[("unknown","unknown")]+=1
     #Hopped_R(x).fq 
         #if R2/R3 barcodes DO NOT MATCH, read is considred a hopped read (mismatched indexes)
     elif str(R2_barcode) != str(R3_barcode):
         all_files["outputs/Hopped_R1.fq"].write(f"{record_R1_updated}\n")
         all_files["outputs/Hopped_R2.fq"].write(f"{record_R4_updated}\n")
+        #REPORTQ: adding to barcode_pair  dict.
+        index_pairs_dict[barcode_pair_tuple]+=1
         # all QC-filters passed at this point! 
     #R2-R3_R(x).fq
         #sorting records by sample(R2-R3 barcode pairs)
     else:
         all_files[f"outputs/{R2_barcode}-{R3_barcode}_R1.fq"].write(f"{record_R1_updated}\n")
         all_files[f"outputs/{R2_barcode}-{R3_barcode}_R2.fq"].write(f"{record_R4_updated}\n")
+        #REPORTQ: adding to barcode_pair  dict.
+        index_pairs_dict[barcode_pair_tuple]+=1
     
+#REPORT Q: Writing Dict into a file: 
+with open("Barcode_Pair_Counts.txt",'w') as file:
+    file.writelines(f"Index1\tIndex2\tRead Count\n")
+    for key in index_pairs_dict:
+        file.writelines(f"{key[0]}\t{key[1]}\t{index_pairs_dict[key]}\n")
 
 #CLOSING ALL FILES: By using all_files dict. to write, files are opened & never closed. Need to close all files oepend by dict.
 for files in all_files.values():
