@@ -48,6 +48,11 @@ Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). 
 |Sample Distribution| Swapped Index Distribution|
 |---|---|
 |![alt text](Sample_Distribution.png)|![alt text](Swapped_Index_Distribution.png)|
+|![alt text](Sample_Distribution_barh.png)|refer to Figure at bottom of report, figure was quite long, very hard to read, pie chart is better in my opinion|
 |distribution of reads w/ matching indexes|distribution of reads w/ unmatched indexes|
 
 - Percentage of reads from each sample = Sample Distribution Fig.
+
+- Majority (49%) of hopped reads fell under the swapped barcode 'TGTTCCGT-TATGGCAC'
+
+![alt text](Swapped_Index_Distribution_barh.png)

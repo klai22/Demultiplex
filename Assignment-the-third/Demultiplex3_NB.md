@@ -501,7 +501,10 @@ Elapsed (wall clock) time (h:mm:ss or m:ss): 1:53:11
 Exit status: 0
 ```
 
-* Assignment asks ```Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). Make sure your folder is well organized and final output is clearly labeled/summarized (a markdown file would be much appreciated!!). Use your code to demultiplex the samples and report:
+* Assignment asks 
+
+```
+Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). Make sure your folder is well organized and final output is clearly labeled/summarized (a markdown file would be much appreciated!!). Use your code to demultiplex the samples and report:
 - Percentage of reads from each sample
 - Overall amount of index swapping
 - Any figures/any other relevant data your code output
@@ -528,11 +531,8 @@ Exit status: 0
 * Will be putting final report answer in ```Report.md```
 
 
-
-
-
-
-TO DO: 
-* change ham_dist fxn in bioinfo.py to use a SET INSTEAD OF A LIST (no .append) to make it faster 
-* double check your qs threshold methods (different for R2 vs. R3, hamming distance of 3)
+_____________________
+08/07/2024
+_____________________
+* Editing Barcode pie charts --> barcharts (horiztonal) for better readibility 
 

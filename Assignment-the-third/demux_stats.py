@@ -79,12 +79,32 @@ ax.set_title("Percentage Samples vs. Swapped_Indexes vs. Unknown")
 plt.savefig(fname="Overall_Distribution.png")
 
 
+#Bar Plot (Horizontal): % of reads from each sample (excluded hopped)
+fig, ax = plt.subplots(figsize=(14,8)) #extending width of figure bc barcodes get cutoff 
+s_barcodes = list(barcode_count_dict.keys())
+s_percentages = barcode_count_dict.values()
+ax.barh(s_barcodes, s_percentages)
+#adding titles 
+ax.set_xlabel('Percentage of Reads')
+ax.set_title('Percentage of Reads from each Sample (excluding hopped)')
+ax.invert_yaxis()
+
+#Saving Figure 
+plt.savefig(fname="Sample_Distribution_barh.png")
 
 
+#Bar Plot (Horizontal): % of reads from each hopped_index
+fig, ax = plt.subplots(figsize=(14,19)) #extending width of figure bc barcodes get cutoff 
+h_barcodes = list(swapped_dict.keys())
+h_percentages = swapped_dict.values()
+ax.barh(h_barcodes, h_percentages)
+#adding titles 
+ax.set_xlabel('Percentage of Reads')
+ax.set_title('Percentage of Reads from each Hopped_Index')
+ax.invert_yaxis()
 
-
-
-
+#Saving Figure 
+plt.savefig(fname="Swapped_Index_Distribution_barh.png")
 
 
 #THE CODE BELOW WAS USED TO REPORT ALL SAMPLES, MIXING HOPPED AND UNHOPPED 
