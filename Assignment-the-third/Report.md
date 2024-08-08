@@ -29,7 +29,8 @@ Final work will be submitted on [GitHub in the Assignment-the-Third folder](.). 
 
 
 # REPORT 
-1. Python Scripts: 
+1. Python Scripts/Outputs:
+* Table including read counts for every detected barcode (post demultiplexing):```https://github.com/klai22/Demultiplex/blob/master/Assignment-the-third/Barcode_Pair_Counts.txt``` 
 * demultiplexing samples & creating barcode count table : 
 ```https://github.com/klai22/Demultiplex/blob/master/Assignment-the-third/demultiplex.py```
 * Analyzing barcode count table: 
