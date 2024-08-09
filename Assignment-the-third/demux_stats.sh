@@ -7,7 +7,7 @@
 #SBATCH --partition=gpu
 #SBATCH --cpus-per-task=5 
 #SBATCH --mem=100G
-#SBATCH --nodes=3
+#SBATCH --nodes=1
 #SBATCH --output=/home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-third/o_e_files/slurm-special-name-%j.out
 #SBATCH --error=/home/kenlai/bgmp/bioinfo/Bi622/Assignments/Demultiplex/Assignment-the-third/o_e_files/slurm-special-name-%j.err
 
